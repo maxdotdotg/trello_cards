@@ -13,11 +13,19 @@ import requests
 # asking the user for double-quoted strings to deal with comments/boards/
 # columns with spaces. not the greatest :disappointed:
 parser = argparse.ArgumentParser(description="add a card to a trello board")
+parser.add_argument("--name", 
+        "-n",
+        type=str,
+        help="name the card, please use double-quotes, or only the first word will get used!",
+        required=True,
+        action="extend",
+        nargs="+"
+)
 parser.add_argument(
     "--comment",
     "-c",
     type=str,
-    help="message the card should have, please use double-quotes, or only the first word will get used!",
+    help="comment to leave on the card, please use double-quotes, or only the first word will get used!",
     required=True,
     action="extend",
     nargs="+",
@@ -33,7 +41,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--column",
-    "-n",
+    "-o",
     type=str,
     help="column the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
@@ -58,6 +66,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # set args
+name = args.name[0]
 comment = args.comment[0]
 target_board = args.board[0]
 target_column = args.column[0]
@@ -137,23 +146,35 @@ def create_labels(board_id, label_name):
     return label_id
 
 # create a card on a list
-def create_card(list_id, comment, labels=[]):
+def create_card(list_id, name, labels=[]):
     url = "https://api.trello.com/1/cards"
     query = BASE_QUERY
     query["idList"] = list_id
-    query["name"] = comment
+    query["name"] = name
     
     if labels:
         query["idLabels"] = labels
 
-    card_response = json.loads(
+    response = json.loads(
         requests.request(
             "POST",
             url,
             params=query
         ).text
     )
-    return card_response
+    return response
+
+def comment_on_card(card_id, comment):
+    url = f"https://api.trello.com/1/cards/{card_id}/actions/comments"
+    query = BASE_QUERY
+    query["text"] = comment
+
+    response = requests.request(
+        "POST",
+        url,
+        params=query
+    )
+    return response
 
 # get details to make the card
 board_id = get_boards(target_board)
@@ -162,11 +183,13 @@ label_ids = [create_labels(board_id, label) for label in target_labels]
 
 # pass labels if they exist
 if label_ids:
-    new_card = create_card(target_list_id, comment, label_ids)
+    new_card = create_card(target_list_id, name, label_ids)
 else: 
-    new_card = create_card(target_list_id, comment)
+    new_card = create_card(target_list_id, name)
 
+# if the card is successfully created, post the comment and return the URL
 if new_card["id"]:
+    comment_on_card(new_card["id"], comment)
     print(f"success! view your card at {new_card['url']}")
 else:
     from pprint import pprint
