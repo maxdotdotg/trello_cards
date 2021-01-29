@@ -13,13 +13,14 @@ import requests
 # asking the user for double-quoted strings to deal with comments/boards/
 # columns with spaces. not the greatest :disappointed:
 parser = argparse.ArgumentParser(description="add a card to a trello board")
-parser.add_argument("--name", 
-        "-n",
-        type=str,
-        help="name the card, please use double-quotes, or only the first word will get used!",
-        required=True,
-        action="extend",
-        nargs="+"
+parser.add_argument(
+    "--name",
+    "-n",
+    type=str,
+    help="name the card, please use double-quotes, or only the first word will get used!",
+    required=True,
+    action="extend",
+    nargs="+",
 )
 parser.add_argument(
     "--comment",
@@ -80,22 +81,13 @@ if args.config:
 with open(config_file, "r") as f:
     config = json.load(f)
 
-BASE_QUERY = { 
-    "key": config["key"],
-    "token": config["token"]
-} 
+BASE_QUERY = {"key": config["key"], "token": config["token"]}
 
 # get all boards and parse boards for board-name
 # output  is a list
 def get_boards(target_board):
     url = "https://api.trello.com/1/members/me/boards"
-    boards = json.loads(
-        requests.request(
-            "GET",
-            url,
-            params=BASE_QUERY
-        ).text
-    )
+    boards = json.loads(requests.request("GET", url, params=BASE_QUERY).text)
 
     for board in boards:
         if board["name"] == target_board:
@@ -105,16 +97,11 @@ def get_boards(target_board):
             print("board not found")
             sys.exit(1)
 
+
 # get lists from board
 def get_lists(board_id, target_column):
     url = f"https://api.trello.com/1/boards/{board_id}/lists"
-    board_lists = json.loads(
-        requests.request(
-            "GET",
-            url,
-            params=BASE_QUERY
-        ).text
-    )
+    board_lists = json.loads(requests.request("GET", url, params=BASE_QUERY).text)
 
     # don't like creating an empty list for `col_id`, but I'm testing for
     # truthiness, so I need something?
@@ -128,6 +115,7 @@ def get_lists(board_id, target_column):
         print("column not found")
         sys.exit(1)
 
+
 # create labels, idempotent ops FTW
 def create_labels(board_id, label_name):
     url = f"https://api.trello.com/1/labels"
@@ -135,15 +123,10 @@ def create_labels(board_id, label_name):
     query["idBoard"] = board_id
     query["name"] = label_name
 
-    label_response = json.loads(
-        requests.request(
-            "POST",
-            url,
-            params=query
-        ).text
-    )
+    label_response = json.loads(requests.request("POST", url, params=query).text)
     label_id = label_response["id"]
     return label_id
+
 
 # create a card on a list
 def create_card(list_id, name, labels=[]):
@@ -151,30 +134,22 @@ def create_card(list_id, name, labels=[]):
     query = BASE_QUERY
     query["idList"] = list_id
     query["name"] = name
-    
+
     if labels:
         query["idLabels"] = labels
 
-    response = json.loads(
-        requests.request(
-            "POST",
-            url,
-            params=query
-        ).text
-    )
+    response = json.loads(requests.request("POST", url, params=query).text)
     return response
+
 
 def comment_on_card(card_id, comment):
     url = f"https://api.trello.com/1/cards/{card_id}/actions/comments"
     query = BASE_QUERY
     query["text"] = comment
 
-    response = requests.request(
-        "POST",
-        url,
-        params=query
-    )
+    response = requests.request("POST", url, params=query)
     return response
+
 
 # get details to make the card
 board_id = get_boards(target_board)
@@ -184,7 +159,7 @@ label_ids = [create_labels(board_id, label) for label in target_labels]
 # pass labels if they exist
 if label_ids:
     new_card = create_card(target_list_id, name, label_ids)
-else: 
+else:
     new_card = create_card(target_list_id, name)
 
 # if the card is successfully created, post the comment and return the URL
@@ -193,5 +168,5 @@ if new_card["id"]:
     print(f"success! view your card at {new_card['url']}")
 else:
     from pprint import pprint
-    print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
 
+    print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
