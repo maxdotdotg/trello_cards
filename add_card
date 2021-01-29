@@ -23,15 +23,6 @@ parser.add_argument(
     nargs="+",
 )
 parser.add_argument(
-    "--comment",
-    "-c",
-    type=str,
-    help="comment to leave on the card, please use double-quotes, or only the first word will get used!",
-    required=True,
-    action="extend",
-    nargs="+",
-)
-parser.add_argument(
     "--board",
     "-b",
     type=str,
@@ -46,6 +37,14 @@ parser.add_argument(
     type=str,
     help="column the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
+    action="extend",
+    nargs="+",
+)
+parser.add_argument(
+    "--comment",
+    "-c",
+    type=str,
+    help="comment to leave on the card, please use double-quotes, or only the first word will get used!",
     action="extend",
     nargs="+",
 )
@@ -68,11 +67,16 @@ args = parser.parse_args()
 
 # set args
 name = args.name[0]
-comment = args.comment[0]
 target_board = args.board[0]
 target_column = args.column[0]
+if args.comment:
+    comment = args.comment[0]
+else:
+    comment = ""
 if args.label:
     target_labels = args.label
+else:
+    target_labels = []
 if args.config:
     config_file = args.config
 
@@ -84,7 +88,6 @@ with open(config_file, "r") as f:
 BASE_QUERY = {"key": config["key"], "token": config["token"]}
 
 # get all boards and parse boards for board-name
-# output  is a list
 def get_boards(target_board):
     url = "https://api.trello.com/1/members/me/boards"
     boards = json.loads(requests.request("GET", url, params=BASE_QUERY).text)
@@ -151,22 +154,25 @@ def comment_on_card(card_id, comment):
     return response
 
 
-# get details to make the card
-board_id = get_boards(target_board)
-target_list_id = get_lists(board_id, target_column)
-label_ids = [create_labels(board_id, label) for label in target_labels]
+if __name__ == "__main__":
 
-# pass labels if they exist
-if label_ids:
-    new_card = create_card(target_list_id, name, label_ids)
-else:
-    new_card = create_card(target_list_id, name)
+    # get details to make the card
+    board_id = get_boards(target_board)
+    target_list_id = get_lists(board_id, target_column)
+    label_ids = [create_labels(board_id, label) for label in target_labels]
 
-# if the card is successfully created, post the comment and return the URL
-if new_card["id"]:
-    comment_on_card(new_card["id"], comment)
-    print(f"success! view your card at {new_card['url']}")
-else:
-    from pprint import pprint
+    # pass labels if they exist
+    if label_ids:
+        new_card = create_card(target_list_id, name, label_ids)
+    else:
+        new_card = create_card(target_list_id, name)
 
-    print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
+    # if the card is successfully created, post the comment and return the URL
+    if new_card["id"] and comment:
+        comment_on_card(new_card["id"], comment)
+        print(f"success! view your card at {new_card['url']}")
+    elif new_card["id"]:
+        print(f"success! view your card at {new_card['url']}")
+    else:
+        from pprint import pprint
+        print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
