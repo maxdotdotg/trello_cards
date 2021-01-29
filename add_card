@@ -76,16 +76,15 @@ with open(config_file, "r") as f:
 KEY = config["key"]
 TOKEN = config["token"]
 
-HEADERS = {
-   "Accept": "application/json"
-}
+HEADERS = {"Accept": "application/json"}
 
 # get all boards and parse boards for board-name
 # output of curl is a list
-boards = json.loads(requests.request(
-        "GET",
-        f"https://api.trello.com/1/members/me/boards?key={KEY}&token={TOKEN}"
-        ).text)
+boards = json.loads(
+    requests.request(
+        "GET", f"https://api.trello.com/1/members/me/boards?key={KEY}&token={TOKEN}"
+    ).text
+)
 
 for board in boards:
     if board["name"] == target_board:
@@ -95,10 +94,12 @@ for board in boards:
         sys.exit(1)
 
 # get lists of board_id
-board_lists = json.loads(requests.request(
-    "GET",
-    f"https://api.trello.com/1/boards/{board_id}/lists?key={KEY}&token={TOKEN}"
-    ).text)
+board_lists = json.loads(
+    requests.request(
+        "GET",
+        f"https://api.trello.com/1/boards/{board_id}/lists?key={KEY}&token={TOKEN}",
+    ).text
+)
 
 # don't like using `list` as a variable name, find something better
 # also, don't like creating an empty list for `list_id`, but I'm testing for
@@ -117,10 +118,12 @@ if target_label:
     label_ids = []
     # this could be a list comprenesion, but I think it'd be harder to read
     for label in target_label:
-        label_response = json.loads(requests.request(
-            "POST",
-            f"https://api.trello.com/1/labels?key={KEY}&token={TOKEN}&idList={list_id}&name={label[0]}&idBoard={board_id}"
-            ).text)
+        label_response = json.loads(
+            requests.request(
+                "POST",
+                f"https://api.trello.com/1/labels?key={KEY}&token={TOKEN}&idList={list_id}&name={label[0]}&idBoard={board_id}",
+            ).text
+        )
         label_ids.append(label_response["id"])
 
 # create a card on a list
