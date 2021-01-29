@@ -56,7 +56,6 @@ parser.add_argument(
     default="config.json",
 )
 args = parser.parse_args()
-print(args)
 
 # set args
 comment = args.comment
@@ -127,10 +126,14 @@ if target_label:
         label_ids.append(label_response["id"])
 
 # create a card on a list
-# curl -XPOST "https://api.trello.com/1/cards?\
-#        key={$KEY}&\
-#        token={$TOKEN}&\
-#        idList={$LIST_ID}&\
-#        name={test-card-from-curl}&\
-#        idLabels={$LABEL_ID}"
-# returns dict with "id" and other stuff
+# still doesn't handle conditional labels
+card_response = json.loads(
+        requests.request(
+            "POST",
+            f"https://api.trello.com/1/cards?key={KEY}&token={TOKEN}&idList={list_id}&name={comment[0]}",
+            ).text
+        )
+if card_response["id"]:
+    print(f"success! view your card at {card_response['url']}")
+else:
+    print(f"oh no! an error occured: {card_response}")
