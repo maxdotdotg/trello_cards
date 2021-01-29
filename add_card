@@ -10,17 +10,44 @@ import sys
 import requests
 
 # parse CLI args
+# asking the user for double-quoted strings to deal with comments/boards/
+# columns with spaces. not the greatest :disappointed:
 parser = argparse.ArgumentParser(description="add a card to a trello board")
 parser.add_argument(
-    "--comment", "-c", type=str, help="message the card should have", required=True
+    "--comment",
+    "-c",
+    type=str,
+    help="message the card should have, please use double-quotes!",
+    required=True,
+    action="extend",
+    nargs="+",
 )
 parser.add_argument(
-    "--board", "-b", type=str, help="board the card should be added to", required=True
+    "--board",
+    "-b",
+    type=str,
+    help="board the card should be added to, please use double-quotes!",
+    required=True,
+    action="extend",
+    nargs="+",
 )
 parser.add_argument(
-    "--column", "-n", type=str, help="column the card should be added to", required=True
+    "--column",
+    "-n",
+    type=str,
+    help="column the card should be added to, please use double-quotes!",
+    required=True,
+    action="extend",
+    nargs="+",
 )
-parser.add_argument("--label", "-l", type=str, help="label to assigned to the card")
+parser.add_argument(
+    "--label",
+    "-l",
+    type=str,
+    help="label to assigned to the card, please use double-quotes!",
+    action="append",
+    nargs="+",
+)
 parser.add_argument(
     "--config",
     "-f",
