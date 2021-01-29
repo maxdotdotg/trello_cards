@@ -58,82 +58,117 @@ parser.add_argument(
 args = parser.parse_args()
 
 # set args
-comment = args.comment
+comment = args.comment[0]
 target_board = args.board[0]
 target_column = args.column[0]
 if args.label:
-    target_label = args.label
+    target_labels = args.label
 if args.config:
     config_file = args.config
-
 
 # read config file for key and token
 # break if they're not present!
 with open(config_file, "r") as f:
     config = json.load(f)
 
-KEY = config["key"]
-TOKEN = config["token"]
-
-HEADERS = {"Accept": "application/json"}
+BASE_QUERY = { 
+    "key": config["key"],
+    "token": config["token"]
+} 
 
 # get all boards and parse boards for board-name
-# output of curl is a list
-boards = json.loads(
-    requests.request(
-        "GET", f"https://api.trello.com/1/members/me/boards?key={KEY}&token={TOKEN}"
-    ).text
-)
+# output  is a list
+def get_boards(target_board):
+    url = "https://api.trello.com/1/members/me/boards"
+    boards = json.loads(
+        requests.request(
+            "GET",
+            url,
+            params=BASE_QUERY
+        ).text
+    )
 
-for board in boards:
-    if board["name"] == target_board:
-        board_id = board["id"]
-    else:
-        print("board not found")
+    for board in boards:
+        if board["name"] == target_board:
+            board_id = board["id"]
+            return board_id
+        else:
+            print("board not found")
+            sys.exit(1)
+
+# get lists from board
+def get_lists(board_id, target_column):
+    url = f"https://api.trello.com/1/boards/{board_id}/lists"
+    board_lists = json.loads(
+        requests.request(
+            "GET",
+            url,
+            params=BASE_QUERY
+        ).text
+    )
+
+    # don't like creating an empty list for `col_id`, but I'm testing for
+    # truthiness, so I need something?
+    col_id = []
+    for col in board_lists:
+        if col["name"] == target_column:
+            col_id = col["id"]
+            return col_id
+
+    if not col_id:
+        print("column not found")
         sys.exit(1)
 
-# get lists of board_id
-board_lists = json.loads(
-    requests.request(
-        "GET",
-        f"https://api.trello.com/1/boards/{board_id}/lists?key={KEY}&token={TOKEN}",
-    ).text
-)
-
-# don't like using `list` as a variable name, find something better
-# also, don't like creating an empty list for `list_id`, but I'm testing for
-# truthiness, so I need something?
-list_id = []
-for list in board_lists:
-    if list["name"] == target_column:
-        list_id = list["id"]
-
-if not list_id:
-    print("column not found")
-    sys.exit(1)
-
 # create labels, idempotent ops FTW
-if target_label:
-    label_ids = []
-    # this could be a list comprenesion, but I think it'd be harder to read
-    for label in target_label:
-        label_response = json.loads(
-            requests.request(
-                "POST",
-                f"https://api.trello.com/1/labels?key={KEY}&token={TOKEN}&idList={list_id}&name={label[0]}&idBoard={board_id}",
-            ).text
-        )
-        label_ids.append(label_response["id"])
+def create_labels(board_id, label_name):
+    url = f"https://api.trello.com/1/labels"
+    query = BASE_QUERY
+    query["idBoard"] = board_id
+    query["name"] = label_name
 
-# create a card on a list
-# still doesn't handle conditional labels
-card_response = json.loads(
+    label_response = json.loads(
         requests.request(
             "POST",
-            f"https://api.trello.com/1/cards?key={KEY}&token={TOKEN}&idList={list_id}&name={comment[0]}",
-            ).text
-        )
-if card_response["id"]:
-    print(f"success! view your card at {card_response['url']}")
+            url,
+            params=query
+        ).text
+    )
+    label_id = label_response["id"]
+    return label_id
+
+# create a card on a list
+def create_card(list_id, comment, labels=[]):
+    url = "https://api.trello.com/1/cards"
+    query = BASE_QUERY
+    query["idList"] = list_id
+    query["name"] = comment
+    
+    if labels:
+        query["idLabels"] = labels
+
+    card_response = json.loads(
+        requests.request(
+            "POST",
+            url,
+            params=query
+        ).text
+    )
+    return card_response
+
+# get details to make the card
+board_id = get_boards(target_board)
+target_list_id = get_lists(board_id, target_column)
+label_ids = [create_labels(board_id, label) for label in target_labels]
+
+# pass labels if they exist
+if label_ids:
+    new_card = create_card(target_list_id, comment, label_ids)
+else: 
+    new_card = create_card(target_list_id, comment)
+
+if new_card["id"]:
+    print(f"success! view your card at {new_card['url']}")
 else:
-    print(f"oh no! an error occured: {card_response}")
+    from pprint import pprint
+    print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
+
