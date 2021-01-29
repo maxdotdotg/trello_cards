@@ -9,16 +9,44 @@ import sys
 
 import requests
 
+# parse CLI args
+parser = argparse.ArgumentParser(description="add a card to a trello board")
+parser.add_argument(
+    "--comment", "-c", type=str, help="message the card should have", required=True
+)
+parser.add_argument(
+    "--board", "-b", type=str, help="board the card should be added to", required=True
+)
+parser.add_argument(
+    "--column", "-n", type=str, help="column the card should be added to", required=True
+)
+parser.add_argument("--label", "-l", type=str, help="label to assigned to the card")
+parser.add_argument(
+    "--config",
+    "-f",
+    type=str,
+    help="config file, defaults to ./config.json",
+    default="config.json",
+)
+args = parser.parse_args()
+
+# set args
+comment = args.comment
+board = args.board
+column = args.column
+if args.label:
+    label = args.label
+if args.config:
+    config_file = args.config
+
+
 # read config file for key and token
 # break if they're not present!
-with open("config.json", "r") as f:
+with open(config_file, "r") as f:
     config = json.load(f)
 
 KEY = config["key"]
 TOKEN = config["token"]
-
-# parse CLI args
-
 
 # get all boards
 # curl 'https://api.trello.com/1/members/me/boards?key={yourKey}&token={yourToken}'
@@ -59,7 +87,6 @@ for list in board_lists:
 #        idBoard={$BOARD_ID}"
 
 
-
 # create a card on a list
 # curl -XPOST "https://api.trello.com/1/cards?\
 #        key={$KEY}&\
@@ -68,4 +95,3 @@ for list in board_lists:
 #        name={test-card-from-curl}&\
 #        idLabels={$LABEL_ID}"
 # returns dict with "id" and other stuff
-
