@@ -108,15 +108,20 @@ for list in board_lists:
     if list["name"] == target_column:
         list_id = list["id"]
 
-# create label (operation is idempotent! yay!)
-#  curl -XPOST "https://api.trello.com/1/labels?\
-#        key={$KEY}&\
-#        token={$TOKEN}&\
-#        idList={$LIST_ID}&\
-#        name={test-label-from-curl}&\
-#        color={sky}&\
-#        idBoard={$BOARD_ID}"
+if not list_id:
+    print("column not found")
+    sys.exit(1)
 
+# create labels, idempotent ops FTW
+if target_label:
+    label_ids = []
+    # this could be a list comprenesion, but I think it'd be harder to read
+    for label in target_label:
+        label_response = json.loads(requests.request(
+            "POST",
+            f"https://api.trello.com/1/labels?key={KEY}&token={TOKEN}&idList={list_id}&name={label[0]}&idBoard={board_id}"
+            ).text)
+        label_ids.append(label_response["id"])
 
 # create a card on a list
 # curl -XPOST "https://api.trello.com/1/cards?\
