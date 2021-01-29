@@ -17,7 +17,7 @@ parser.add_argument(
     "--comment",
     "-c",
     type=str,
-    help="message the card should have, please use double-quotes!",
+    help="message the card should have, please use double-quotes, or only the first word will get used!",
     required=True,
     action="extend",
     nargs="+",
@@ -26,7 +26,7 @@ parser.add_argument(
     "--board",
     "-b",
     type=str,
-    help="board the card should be added to, please use double-quotes!",
+    help="board the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
     action="extend",
     nargs="+",
@@ -35,7 +35,7 @@ parser.add_argument(
     "--column",
     "-n",
     type=str,
-    help="column the card should be added to, please use double-quotes!",
+    help="column the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
     action="extend",
     nargs="+",
@@ -44,7 +44,7 @@ parser.add_argument(
     "--label",
     "-l",
     type=str,
-    help="label to assigned to the card, please use double-quotes!",
+    help="label to assigned to the card, please use double-quotes, or only the first word will get used!",
     action="append",
     nargs="+",
 )
@@ -56,13 +56,14 @@ parser.add_argument(
     default="config.json",
 )
 args = parser.parse_args()
+print(args)
 
 # set args
 comment = args.comment
-board = args.board
-column = args.column
+target_board = args.board[0]
+target_column = args.column[0]
 if args.label:
-    label = args.label
+    target_label = args.label
 if args.config:
     config_file = args.config
 
@@ -75,34 +76,37 @@ with open(config_file, "r") as f:
 KEY = config["key"]
 TOKEN = config["token"]
 
-# get all boards
-# curl 'https://api.trello.com/1/members/me/boards?key={yourKey}&token={yourToken}'
+HEADERS = {
+   "Accept": "application/json"
+}
 
-# parse boards for board-name
+# get all boards and parse boards for board-name
 # output of curl is a list
-"""
+boards = json.loads(requests.request(
+        "GET",
+        f"https://api.trello.com/1/members/me/boards?key={KEY}&token={TOKEN}"
+        ).text)
+
 for board in boards:
     if board["name"] == target_board:
         board_id = board["id"]
     else:
         print("board not found")
         sys.exit(1)
-"""
 
 # get lists of board_id
-# curl "https://api.trello.com/1/boards/\
-#        $BOARD_ID/lists?\
-#        key={$KEY}&\
-#        token={$TOKEN}"
-# returns a list
-"""
+board_lists = json.loads(requests.request(
+    "GET",
+    f"https://api.trello.com/1/boards/{board_id}/lists?key={KEY}&token={TOKEN}"
+    ).text)
+
+# don't like using `list` as a variable name, find something better
+# also, don't like creating an empty list for `list_id`, but I'm testing for
+# truthiness, so I need something?
+list_id = []
 for list in board_lists:
-    if list["name"] == target_list:
+    if list["name"] == target_column:
         list_id = list["id"]
-    else:
-        print("column not found")
-        sys.exit(1)
-"""
 
 # create label (operation is idempotent! yay!)
 #  curl -XPOST "https://api.trello.com/1/labels?\
