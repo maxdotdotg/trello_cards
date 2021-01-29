@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+"""
+Take user input to add a Trello card with labels and a comment to the specified column of board. 
+"""
+import argparse
+import json
+import sys
+
+import requests
+
+# read config file for key and token
+# break if they're not present!
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+KEY = config["key"]
+TOKEN = config["token"]
+
+# parse CLI args
+
+
+# get all boards
+# curl 'https://api.trello.com/1/members/me/boards?key={yourKey}&token={yourToken}'
+
+# parse boards for board-name
+# output of curl is a list
+"""
+for board in boards:
+    if board["name"] == target_board:
+        board_id = board["id"]
+    else:
+        print("board not found")
+        sys.exit(1)
+"""
+
+# get lists of board_id
+# curl "https://api.trello.com/1/boards/\
+#        $BOARD_ID/lists?\
+#        key={$KEY}&\
+#        token={$TOKEN}"
+# returns a list
+"""
+for list in board_lists:
+    if list["name"] == target_list:
+        list_id = list["id"]
+    else:
+        print("column not found")
+        sys.exit(1)
+"""
+
+# create label (operation is idempotent! yay!)
+#  curl -XPOST "https://api.trello.com/1/labels?\
+#        key={$KEY}&\
+#        token={$TOKEN}&\
+#        idList={$LIST_ID}&\
+#        name={test-label-from-curl}&\
+#        color={sky}&\
+#        idBoard={$BOARD_ID}"
+
+
+
+# create a card on a list
+# curl -XPOST "https://api.trello.com/1/cards?\
+#        key={$KEY}&\
+#        token={$TOKEN}&\
+#        idList={$LIST_ID}&\
+#        name={test-card-from-curl}&\
+#        idLabels={$LABEL_ID}"
+# returns dict with "id" and other stuff
+
