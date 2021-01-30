@@ -121,7 +121,7 @@ def get_lists(board_id, target_column):
 
 # create labels, idempotent ops FTW
 def create_labels(board_id, label_name):
-    url = f"https://api.trello.com/1/labels"
+    url = "https://api.trello.com/1/labels"
     query = BASE_QUERY
     query["idBoard"] = board_id
     query["name"] = label_name
