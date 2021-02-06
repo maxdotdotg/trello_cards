@@ -19,7 +19,7 @@ parser.add_argument(
     type=str,
     help="name the card, please use double-quotes, or only the first word will get used!",
     required=True,
-    action="extend",
+    action="append",
     nargs="+",
 )
 parser.add_argument(
@@ -28,7 +28,7 @@ parser.add_argument(
     type=str,
     help="board the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
-    action="extend",
+    action="append",
     nargs="+",
 )
 parser.add_argument(
@@ -37,7 +37,7 @@ parser.add_argument(
     type=str,
     help="column the card should be added to, please use double-quotes, or only the first word will get used!",
     required=True,
-    action="extend",
+    action="append",
     nargs="+",
 )
 parser.add_argument(
@@ -45,7 +45,7 @@ parser.add_argument(
     "-c",
     type=str,
     help="comment to leave on the card, please use double-quotes, or only the first word will get used!",
-    action="extend",
+    action="append",
     nargs="+",
 )
 parser.add_argument(
