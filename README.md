@@ -71,6 +71,3 @@ optional arguments:
     - colors for the labels?
     - take API key and Server Token as CLI args or env vars?
 
-## Total Time
-Around 4 hours
-
