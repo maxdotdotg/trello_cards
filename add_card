@@ -74,7 +74,7 @@ It should look like this:
 """)
     sys.exit(1)
 
-# get all boards and parse boards for board-name
+# get all boards and search for target_board
 def get_boards(target_board):
     url = "https://api.trello.com/1/members/me/boards"
     boards = json.loads(requests.request("GET", url, params=BASE_QUERY).text)
@@ -119,7 +119,7 @@ def create_labels(board_id, label_name):
 
 
 # create a card on a list
-def create_card(list_id, name, labels=[]):
+def create_card(list_id, labels, **kwargs):
     url = "https://api.trello.com/1/cards"
     query = BASE_QUERY
     query["idList"] = list_id
