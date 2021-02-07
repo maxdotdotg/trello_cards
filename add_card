@@ -59,11 +59,20 @@ parser.add_argument("--version", "-v", action="version", version="%(prog)s 1.0")
 args = parser.parse_args()
 
 # read config file for key and token
-# break if they're not present!
-with open(config_file, "r") as f:
+with open(args.config, "r") as f:
     config = json.load(f)
 
-BASE_QUERY = {"key": config["key"], "token": config["token"]}
+try:
+    BASE_QUERY = {"key": config["key"], "token": config["token"]}
+except KeyError:
+    print("""oh no! something's wrong with your config file!
+It should look like this:
+{
+  "key": "TRELLO_API_KEY",
+  "token": "TRELLO_SERVER_TOKEN"
+}
+""")
+    sys.exit(1)
 
 # get all boards and parse boards for board-name
 def get_boards(target_board):
