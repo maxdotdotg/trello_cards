@@ -31,31 +31,29 @@ Here's a sample execution:
 Here's the full help:
 
 ``` bash
-usage: add_card [-h] --name NAME [NAME ...] --board BOARD [BOARD ...] --column
-                COLUMN [COLUMN ...] [--comment COMMENT [COMMENT ...]]
-                [--label LABEL [LABEL ...]] [--config CONFIG]
+usage: add_card [-h] --name NAME --board BOARD --column COLUMN
+                [--comment COMMENT] [--label LABEL [LABEL ...]]
+                [--config CONFIG] [--version]
 
 add a card to a trello board
 
 optional arguments:
   -h, --help            show this help message and exit
-  --name NAME [NAME ...], -n NAME [NAME ...]
-                        name the card, please use double-quotes, or only the
-                        first word will get used!
-  --board BOARD [BOARD ...], -b BOARD [BOARD ...]
+  --name NAME, -n NAME  name of the new card, please use double-quotes
+  --board BOARD, -b BOARD
                         board the card should be added to, please use double-
-                        quotes, or only the first word will get used!
-  --column COLUMN [COLUMN ...], -o COLUMN [COLUMN ...]
+                        quotes
+  --column COLUMN, -o COLUMN
                         column the card should be added to, please use double-
-                        quotes, or only the first word will get used!
-  --comment COMMENT [COMMENT ...], -c COMMENT [COMMENT ...]
-                        comment to leave on the card, please use double-
-                        quotes, or only the first word will get used!
+                        quotes
+  --comment COMMENT, -c COMMENT
+                        comment to leave on the card, please use double-quotes
   --label LABEL [LABEL ...], -l LABEL [LABEL ...]
-                        label to assigned to the card, please use double-
-                        quotes, or only the first word will get used!
+                        label to assign to the card, please use double-quotes
   --config CONFIG, -f CONFIG
                         config file, defaults to ./config.json
+  --version, -v         show program's version number and exit
+
 ```
 
 ## Next Steps
