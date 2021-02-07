@@ -2,7 +2,13 @@
 Take user input to add a Trello card with labels and a comment to the specified column of the board.
 
 ## Requirements
-This is written in Python 3.8 and has one 3rd-party dependency, `requests`. Use your python environment management tool of choice to set up (I like `virtualenv`), then install the dependencies: `pip install -r requirements.txt`
+This is written in Python 3 and has one 3rd-party dependency, `requests`.
+
+``` bash
+virtualenv -p python3 .
+source bin/activate
+pip install -r requirements.txt
+```
 
 `add_card` also uses a json config file for access to the [Trello API key and Server Token](https://trello.com/app-key), which looks like this:
 ``` bash
