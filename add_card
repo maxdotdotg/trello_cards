@@ -55,7 +55,7 @@ parser.add_argument(
     help="config file, defaults to ./config.json",
     default="config.json",
 )
-parser.add_argument("--version", "-v", action="version", version="%(prog)s 1.0")
+parser.add_argument("--version", "-v", action="version", version="%(prog)s 1.1")
 args = parser.parse_args()
 
 # read config file for key and token
