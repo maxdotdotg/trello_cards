@@ -133,7 +133,7 @@ def create_card(list_id, labels, **kwargs):
     response = json.loads(requests.request("POST", url, params=query).text)
     return response
 
-
+# add a comment to a card
 def comment_on_card(card_id, comment):
     url = f"https://api.trello.com/1/cards/{card_id}/actions/comments"
     query = BASE_QUERY
@@ -142,7 +142,7 @@ def comment_on_card(card_id, comment):
     response = requests.request("POST", url, params=query)
     return response
 
-
+# wrap all the pieces together
 def add_new_card(target_labels, **kwargs):
     board_id = get_boards(target_board)
     target_list_id = get_lists(board_id, target_column)
@@ -168,8 +168,8 @@ if __name__ == "__main__":
     target_column = args.column
     comment = args.comment[0] or ""
     target_labels = args.label or []
-    config_file = args.config
 
+    # add card to board
     add_new_card(
         name=name,
         target_board=target_board,
