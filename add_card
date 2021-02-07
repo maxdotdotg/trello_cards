@@ -58,21 +58,6 @@ parser.add_argument(
 parser.add_argument("--version", "-v", action="version", version="%(prog)s 1.0")
 args = parser.parse_args()
 
-# set args
-name = args.name[0]
-target_board = args.board[0]
-target_column = args.column[0]
-if args.comment:
-    comment = args.comment[0]
-else:
-    comment = ""
-if args.label:
-    target_labels = args.label
-else:
-    target_labels = []
-if args.config:
-    config_file = args.config
-
 # read config file for key and token
 # break if they're not present!
 with open(config_file, "r") as f:
@@ -146,27 +131,37 @@ def comment_on_card(card_id, comment):
     response = requests.request("POST", url, params=query)
     return response
 
-
-if __name__ == "__main__":
-
-    # get details to make the card
+def add_new_card(target_labels, **kwargs):
     board_id = get_boards(target_board)
     target_list_id = get_lists(board_id, target_column)
     label_ids = [create_labels(board_id, label) for label in target_labels]
 
-    # pass labels if they exist
-    if label_ids:
-        new_card = create_card(target_list_id, name, label_ids)
-    else:
-        new_card = create_card(target_list_id, name)
+    # create the new card
+    new_card = create_card(target_list_id, label_ids, **kwargs)
 
-    # if the card is successfully created, post the comment and return the URL
-    if new_card["id"] and comment:
+    if not new_card["id"]:
+        print(f"oh no! an error occured, here's the full response: {new_card}")
+        sys.exit(1)
+
+    if comment:
         comment_on_card(new_card["id"], comment)
-        print(f"success! view your card at {new_card['url']}")
-    elif new_card["id"]:
-        print(f"success! view your card at {new_card['url']}")
-    else:
-        from pprint import pprint
 
-        print(f"oh no! an error occured, here's the full response: {pprint(new_card)}")
+    print(f"success! view your card at {new_card['url']}")
+
+if __name__ == "__main__":
+    # set args
+    name = args.name
+    target_board = args.board
+    target_column = args.column
+    comment = args.comment[0] or ""
+    target_labels = args.label or []
+    config_file = args.config
+
+    add_new_card(
+        name=name,
+        target_board=target_board,
+        target_column=target_column,
+        comment=comment,
+        target_labels=target_labels
+    )
+
