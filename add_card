@@ -65,13 +65,15 @@ with open(args.config, "r") as f:
 try:
     BASE_QUERY = {"key": config["key"], "token": config["token"]}
 except KeyError:
-    print("""oh no! something's wrong with your config file!
+    print(
+        """oh no! something's wrong with your config file!
 It should look like this:
 {
   "key": "TRELLO_API_KEY",
   "token": "TRELLO_SERVER_TOKEN"
 }
-""")
+"""
+    )
     sys.exit(1)
 
 # get all boards and search for target_board
@@ -140,6 +142,7 @@ def comment_on_card(card_id, comment):
     response = requests.request("POST", url, params=query)
     return response
 
+
 def add_new_card(target_labels, **kwargs):
     board_id = get_boards(target_board)
     target_list_id = get_lists(board_id, target_column)
@@ -157,6 +160,7 @@ def add_new_card(target_labels, **kwargs):
 
     print(f"success! view your card at {new_card['url']}")
 
+
 if __name__ == "__main__":
     # set args
     name = args.name
@@ -171,6 +175,5 @@ if __name__ == "__main__":
         target_board=target_board,
         target_column=target_column,
         comment=comment,
-        target_labels=target_labels
+        target_labels=target_labels,
     )
-
